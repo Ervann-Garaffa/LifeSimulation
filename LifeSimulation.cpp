@@ -14,10 +14,14 @@ struct Particle
     sf::Color color;
 
     Particle(sf::Color m_color)
-    : shape(sf::Vector2f(PARTICLE_SIZE, PARTICLE_SIZE)), color(m_color)
+        : shape(sf::Vector2f(PARTICLE_SIZE, PARTICLE_SIZE)), color(m_color)
     {
         shape.setFillColor(color);
     }
+
+    void update() {}
+
+    void render(sf::RenderWindow &window) { window.draw(shape); }
 };
 
 int main()
