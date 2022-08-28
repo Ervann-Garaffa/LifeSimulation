@@ -3,9 +3,30 @@
 #include <SFML/Graphics.hpp>
 #include <SFML/Window.hpp>
 
+const int FRAME_WIDTH = 600;
+const int FRAME_HEIGHT = 600;
+const int PARTICLE_SIZE = 1;
+
+struct Particle
+{
+    sf::Vector2f pos;
+    sf::RectangleShape shape;
+    sf::Color color;
+
+    Particle(sf::Color m_color)
+    : shape(sf::Vector2f(PARTICLE_SIZE, PARTICLE_SIZE)), color(m_color)
+    {
+        shape.setFillColor(color);
+    }
+};
+
 int main()
 {
-    sf::Window window(sf::VideoMode(1280, 800), "Life Simulation");
+    sf::RenderWindow window(sf::VideoMode(1280, 800), "Life Simulation");
+    sf::RectangleShape frame(sf::Vector2f(FRAME_WIDTH, FRAME_HEIGHT));
+    frame.setOutlineThickness(1);
+    frame.setOutlineColor(sf::Color::Blue);
+    frame.setFillColor(sf::Color::Black);
 
     while (window.isOpen())
     {
@@ -15,6 +36,12 @@ int main()
         {
             if (event.type == sf::Event::Closed)
                 window.close();
+            
+            frame.setPosition(window.getSize().x - 650, window.getSize().y - 650);
+
+            window.clear(sf::Color::Black);
+            window.draw(frame);
+            window.display();
         }
     }
 
