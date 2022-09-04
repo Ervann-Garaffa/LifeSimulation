@@ -8,7 +8,7 @@
             "name": "(gdb) Launch",
             "type": "cppdbg",
             "request": "launch",
-            "program": "${workspaceFolder}/run",
+            "program": "${workspaceFolder}/LifeSimulation",
             "args": [],
             "stopAtEntry": false,
             "cwd": "${fileDirname}",
