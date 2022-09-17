@@ -78,7 +78,9 @@ int main()
         // std::cout << randX << "     " << randY << "     " << zoneX << "     " << zoneY << std::endl;
         container_zones[zoneX + zoneY * ZONE_GRID_WIDTH].emplace_back(sf::Color::Red, randX, randY);
     }
-  
+    
+    // Start window loop
+    // Separate Window loop and simulation loop
     while (window.isOpen())
     {
         sf::Event event;
@@ -90,10 +92,9 @@ int main()
         window.clear(window_background);
         window.draw(frame);
 
+        // Render all particles
         for (int i = 0; i < ZONE_GRID_WIDTH * ZONE_GRID_HEIGHT; i++)
-        {
             std::for_each(container_zones[i].begin(), container_zones[i].end(), [&window](Particle p){ p.render(window); });
-        }
 
         window.display();
     }
