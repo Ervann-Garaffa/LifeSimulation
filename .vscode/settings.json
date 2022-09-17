@@ -1,6 +1,11 @@
 {
     "files.associations": {
         "ostream": "cpp",
-        "iostream": "cpp"
+        "iostream": "cpp",
+        "array": "cpp",
+        "*.tcc": "cpp",
+        "algorithm": "cpp",
+        "random": "cpp",
+        "numeric": "cpp"
     }
 }

@@ -1,6 +1,7 @@
 #include <iostream>
 #include <vector>
 #include <random>
+#include <functional>
 #include <SFML/System.hpp>
 #include <SFML/Graphics.hpp>
 #include <SFML/Window.hpp>
@@ -11,15 +12,21 @@ const int WINDOW_HEIGHT = 900;
 const int FRAME_WIDTH = 800;
 const int FRAME_HEIGHT = 800;
 const int ZONE_SCALE = 80;
-const int PARTICLE_SIZE = 2;
 const int FRAME_X_OFFSET = WINDOW_WIDTH - (FRAME_WIDTH + 50);
 const int FRAME_Y_OFFSET = WINDOW_HEIGHT - (FRAME_HEIGHT + 50);
+const int ZONE_GRID_WIDTH = FRAME_WIDTH / ZONE_SCALE;
+const int ZONE_GRID_HEIGHT = FRAME_HEIGHT / ZONE_SCALE;
+
+// Particles parameters
+const int PARTICLE_SIZE = 1;
+const int PART_NB_AT_START = 1000;
 
 // Random number generator to initialize random caracteristics.
 std::random_device random_device;
 std::mt19937 gen(random_device());
 std::uniform_real_distribution<> random_dist(0, 799);
-// Create random number with : random_number = random_dist(gen);
+// Create random number with : rand_nb()
+auto rand_nb = std::bind(random_dist, gen);
 
 struct Particle
 {
@@ -52,17 +59,24 @@ int main()
     frame.setPosition(FRAME_X_OFFSET, FRAME_Y_OFFSET);
     sf::Color window_background = sf::Color(30, 30, 30);
 
-    // Init 2D Array of zones containing vector of particles
+    // Init 1D Array of zones containing vector of particles 
     // Enables local search for proximity interactions
-    std::vector<Particle> container_zones[FRAME_WIDTH / ZONE_SCALE][FRAME_HEIGHT / ZONE_SCALE];
+    std::vector<Particle> container_zones[ZONE_GRID_WIDTH * ZONE_GRID_HEIGHT];
 
-    for (int i = 0; i < 10; i++)
+    // Generate a certain number of particles
+    for (int i = 0; i < PART_NB_AT_START; i++)
     {
-        sf::Vector2f rand_pos(random_dist(gen),random_dist(gen));
-        container_zones[(int)(rand_pos.x / ZONE_SCALE)][(int)(rand_pos.y / ZONE_SCALE)].emplace_back(sf::Color::Red, rand_pos.x + FRAME_X_OFFSET, rand_pos.y + FRAME_Y_OFFSET);
-        std::cout << rand_pos.x << " " << rand_pos.y << '\n';
-        std::cout << (int)(rand_pos.x / ZONE_SCALE) << " " << (int)(rand_pos.y / ZONE_SCALE) << '\n';
-        std::cout << container_zones[(int)(rand_pos.x / ZONE_SCALE)][(int)(rand_pos.y / ZONE_SCALE)].size() << "\n\n";
+        int randX = rand_nb();
+        int randY = rand_nb();
+
+        int zoneX = randX / ZONE_SCALE;
+        int zoneY = randY / ZONE_SCALE;
+
+        randX += FRAME_X_OFFSET + 1;
+        randY += FRAME_Y_OFFSET + 1;
+
+        // std::cout << randX << "     " << randY << "     " << zoneX << "     " << zoneY << std::endl;
+        container_zones[zoneX + zoneY * ZONE_GRID_WIDTH].emplace_back(sf::Color::Red, randX, randY);
     }
   
     while (window.isOpen())
@@ -76,10 +90,10 @@ int main()
         window.clear(window_background);
         window.draw(frame);
 
-        for (int i = 0; i < 10; i++)
-            for (int j = 0; j < 10; j++)
-                if (container_zones[i, j]->size() > 0)
-                    std::for_each(container_zones[i, j]->begin(), container_zones[i, j]->end(), [&window](Particle &p){ p.render(window); });
+        for (int i = 0; i < ZONE_GRID_WIDTH * ZONE_GRID_HEIGHT; i++)
+        {
+            std::for_each(container_zones[i].begin(), container_zones[i].end(), [&window](Particle p){ p.render(window); });
+        }
 
         window.display();
     }
