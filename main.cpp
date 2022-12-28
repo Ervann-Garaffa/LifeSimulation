@@ -10,6 +10,7 @@ const int WINDOW_HEIGHT = 1000;
 const int WORLD_SIZE = std::min(WINDOW_WIDTH, WINDOW_HEIGHT) - 200;
 const sf::Vector2f WORLD_ORIGIN = sf::Vector2f(WINDOW_WIDTH - WORLD_SIZE - 100, 100);
 const int GRID_SCALE = WORLD_SIZE / 10; // Always grid 10 x 10
+const float PARTICLE_RADIUS = 10.f;
 
 struct Particle
 {
@@ -21,13 +22,14 @@ struct Particle
     sf::CircleShape m_shape;
 
     Particle()
-    :   m_position(120.f, 799.f), m_speed(0.f, 0.f), m_acceleration(0.f, 0.f), m_radius(10.f), m_color(sf::Color::Red)
+    :   m_position(800.f, 800.f), m_speed(0.f, 0.f), m_acceleration(0.f, 0.f), m_radius(PARTICLE_RADIUS), m_color(sf::Color::Red)
     {
-        m_shape.setRadius(50.f);
+        m_shape.setRadius(m_radius);
         m_shape.setPosition(m_position);
         m_shape.setFillColor(m_color);
+        m_shape.setOrigin(- WORLD_ORIGIN + sf::Vector2f(m_radius, m_radius));
     }
-
+    
     ~Particle(){}
 
     // TODO: update and shape display functions
@@ -52,9 +54,9 @@ int main()
     sf::Font font;
     if (!font.loadFromFile("arial.ttf")){ std::cout << "Couldn't load font from file";}
 
-    sf::RectangleShape worldArea(sf::Vector2f(WORLD_SIZE, WORLD_SIZE));
+    sf::RectangleShape worldArea(sf::Vector2f(WORLD_SIZE + 2 * PARTICLE_RADIUS, WORLD_SIZE + 2 * PARTICLE_RADIUS));
     worldArea.setFillColor(sf::Color::Black);
-    worldArea.setPosition(WORLD_ORIGIN);
+    worldArea.setPosition(WORLD_ORIGIN - sf::Vector2f(PARTICLE_RADIUS, PARTICLE_RADIUS));
 
     Particle particle;
     
