@@ -2,11 +2,12 @@
 #include <math.h>
 #include <string>
 #include <vector>
+#include <list>
 
 #include <SFML/Graphics.hpp>
 
-const int WINDOW_WIDTH = 2000;
-const int WINDOW_HEIGHT = 1000;
+const int WINDOW_WIDTH = 1600;
+const int WINDOW_HEIGHT = 800;
 const int WORLD_SIZE = std::min(WINDOW_WIDTH, WINDOW_HEIGHT) - 200;
 const sf::Vector2f WORLD_ORIGIN = sf::Vector2f(WINDOW_WIDTH - WORLD_SIZE - 100, 100);
 const int GRID_SCALE = WORLD_SIZE / 10; // Always grid 10 x 10
@@ -17,12 +18,15 @@ struct Particle
     sf::Vector2f m_position;
     sf::Vector2f m_speed;
     sf::Vector2f m_acceleration;
+    
     int m_radius;
     sf::Color m_color;
     sf::CircleShape m_shape;
+    
+    Particle* m_ptrNext = nullptr;
 
     Particle()
-    :   m_position(800.f, 800.f), m_speed(0.f, 0.f), m_acceleration(0.f, 0.f), m_radius(PARTICLE_RADIUS), m_color(sf::Color::Red)
+    :   m_position(600.f, 600.f), m_speed(0.f, 0.f), m_acceleration(0.f, 0.f), m_radius(PARTICLE_RADIUS), m_color(sf::Color::Red)
     {
         m_shape.setRadius(m_radius);
         m_shape.setPosition(m_position);
@@ -31,6 +35,17 @@ struct Particle
     }
     
     ~Particle(){}
+
+    // Operator overload to enable comparisons when using std::list::remove(Particle p_particle) to find the right element
+    bool operator==(const Particle& other) const
+    {
+        // Return true if the particles are equal, false otherwise
+        return  m_position == other.m_position && 
+                m_speed == other.m_speed && 
+                m_acceleration == other.m_acceleration && 
+                m_radius == other.m_radius && 
+                m_color == other.m_color;
+    }
 
     // TODO: update and shape display functions
 };
@@ -41,10 +56,31 @@ const int hashFunction(Particle* p_particle)
     return (WORLD_SIZE / GRID_SCALE) * std::floor(p_particle->m_position.y / GRID_SCALE) + std::floor(p_particle->m_position.x / GRID_SCALE);
 }
 
-// TODO: create table of linked lists of particles and visualization grid. Table is 800 x 800, grid 10 x 10
+// TODO: create array of linked lists of particles and visualization grid. Table is 800 x 800, grid 10 x 10
 struct HashTable
 {
-    
+    int m_size;
+    std::vector<std::list<Particle>> m_table;
+
+    HashTable()
+    :   m_size(100)
+    {
+        m_table.resize(m_size);
+    }
+
+    ~HashTable(){}
+
+    void insertItem(Particle p_particle)
+    {
+        int index = hashFunction(&p_particle);
+        m_table[index].push_back(p_particle);
+    }
+
+    void deleteItem(Particle p_particle)
+    {
+        int index = hashFunction(&p_particle);
+        m_table[index].remove(p_particle);
+    }
 };
 
 int main()
@@ -52,7 +88,7 @@ int main()
     // Window size matters, grid visualization of Hash Table and World Area both at 800 x 800
     sf::RenderWindow window(sf::VideoMode(WINDOW_WIDTH, WINDOW_HEIGHT), "SFML works!");
     sf::Font font;
-    if (!font.loadFromFile("arial.ttf")){ std::cout << "Couldn't load font from file";}
+    if (!font.loadFromFile("arial.ttf")){std::cout << "Couldn't load font from file";}
 
     sf::RectangleShape worldArea(sf::Vector2f(WORLD_SIZE + 2 * PARTICLE_RADIUS, WORLD_SIZE + 2 * PARTICLE_RADIUS));
     worldArea.setFillColor(sf::Color::Black);
