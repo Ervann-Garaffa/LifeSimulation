@@ -87,7 +87,7 @@ const int hashFunction(Particle &p_particle)
     return (WORLD_SIZE / GRID_SCALE) * std::floor(p_particle.m_position.y / GRID_SCALE) + std::floor(p_particle.m_position.x / GRID_SCALE);
 }
 
-// TODO: create table of linked lists of particles and visualization grid. Table is 800 x 800, grid 10 x 10
+// TODO: create array of linked lists of particles and visualization grid. Table is 800 x 800, grid 10 x 10
 struct HashTable
 {
     int m_size;
