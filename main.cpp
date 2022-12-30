@@ -25,10 +25,11 @@ struct Particle
     sf::Color m_color;
     sf::CircleShape m_shape;
 
-    Particle* m_ptrNext = nullptr;
+    // TODO: Figure out if ptr Next should be used in particle object or not
+    // Particle* m_ptrNext = nullptr;
 
-    Particle()
-    :   m_position(800.f, 800.f), m_speed(-1.f, 0.f), m_acceleration(0.f, 0.f), m_radius(PARTICLE_RADIUS), m_color(sf::Color::Red)
+    Particle(float p_x, float p_y)
+    :   m_position(p_x, p_y), m_speed(0.f, 0.f), m_acceleration(0.f, 0.f), m_radius(PARTICLE_RADIUS), m_color(sf::Color::Red)
     {
         m_shape.setRadius(m_radius);
         m_shape.setPosition(m_position);
@@ -49,10 +50,29 @@ struct Particle
                 m_color == other.m_color;
     }
 
-    // TODO: Implement
-    void interact(const Particle &p_particle)
+    const sf::Vector2f vectorTo(Particle &p_particle)
     {
+        return (p_particle.m_position - this->m_position);
+    }
 
+    const float distanceTo(Particle &p_particle)
+    {
+        float distX = p_particle.m_position.x - this->m_position.x;
+        float distY = p_particle.m_position.y - this->m_position.y;
+        return std::sqrt(distX * distX + distY * distY);
+    }
+
+    // TODO: Implement
+    void interactWith(Particle &p_particle)
+    {
+        // TODO: determine which interaction depending on the other particle
+        // TODO: calculate interaction
+        float distance = distanceTo(p_particle);
+        if (distance < 0.5f)
+            distance = 0.5f;
+        this->m_acceleration += vectorTo(p_particle) * 0.00000001f / (distance*distance);
+
+        // TODO: update acceleration vector accordingly
     }
 
     void tick(float p_dt)
@@ -73,6 +93,7 @@ struct Particle
 
         // Update the particle's shape to match its new position
         m_shape.setPosition(m_position);
+        m_acceleration = sf::Vector2f(0.f, 0.f);
     }
 
     void display(sf::RenderWindow &window)
@@ -87,7 +108,14 @@ const int hashFunction(Particle &p_particle)
     return (WORLD_SIZE / GRID_SCALE) * std::floor(p_particle.m_position.y / GRID_SCALE) + std::floor(p_particle.m_position.x / GRID_SCALE);
 }
 
-// TODO: create array of linked lists of particles and visualization grid. Table is 800 x 800, grid 10 x 10
+// Hash function overload to find index in Hash table from grid cell coordinates
+const int hashFunction(int gridX, int gridY)
+{
+    return (gridX * (WORLD_SIZE / GRID_SCALE)) + gridY;
+}
+
+// Hash table is a vector of lists of particles and visualization grid. Table is 800 x 800, grid 10 x 10 (size 100)
+// Vectors are required because size of lists will vary and vector should get updated
 struct HashTable
 {
     int m_size;
@@ -131,8 +159,10 @@ int main()
     int frameCount = 0;
     sf::Text frameTimeLabel(" ms", font);
 
-    Particle particle;
-    
+    Particle particleA(300.f, 400.f);
+    Particle particleB(500.f, 400.f);
+    Particle particleC(400.f, 700.f);
+
     // Main window loop
     while (window.isOpen())
     {
@@ -154,10 +184,26 @@ int main()
 
         window.clear(sf::Color(0x222222FF));
         window.draw(worldArea);
-        particle.tick(dt);
-        window.draw(particle.m_shape);
+
+        particleA.interactWith(particleB);
+        particleB.interactWith(particleA);
+        particleA.interactWith(particleC);
+        particleB.interactWith(particleC);
+        particleC.interactWith(particleA);
+        particleC.interactWith(particleB);
+        
+        particleA.tick(dt);
+        particleB.tick(dt);
+        particleC.tick(dt);
+
+        window.draw(particleA.m_shape);
+        window.draw(particleB.m_shape);
+        window.draw(particleC.m_shape);
+
         window.draw(frameTimeLabel);
         window.display();
+
+        sf::sleep(sf::milliseconds(8));
     }
 
     return 0;
